@@ -1,6 +1,6 @@
 use std::{path::Path, result};
-
-use actix_web::{cookie::time::convert::Microsecond, delete, get, post, put, web::{Data, Json,Path as pa}, App, Error, HttpResponse, HttpServer, Responder};
+use actix_cors::Cors;
+use actix_web::{cookie::time::convert::Microsecond, delete, get, http, post, put, web::{Data, Json,Path as pa}, App, Error, HttpResponse, HttpServer, Responder};
 mod db;
 use db::MongoRepo;
 mod models;
@@ -86,7 +86,17 @@ async  fn main() -> std::io::Result<()>{
     let d = MongoRepo::init().await;
     let db_data = Data::new(d);
     HttpServer::new(move ||{
+        let cors = Cors::default()
+            .allowed_origin("http://localhost:3000")
+            .allowed_origin("http://localhost:3200")
+            .allowed_origin("https://your-origin.com")
+            .allowed_origin("https://your-origin2.com")
+            .allowed_methods(vec!["GET", "POST", "DELETE", "PUT"])
+            .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT,http::header::CONTENT_TYPE])
+            .max_age(3600);
+        
         App::new()
+            .wrap(cors)
             .app_data(db_data.clone())
             .service(getmovies)
             .service(add_movies)

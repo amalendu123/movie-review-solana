@@ -1,17 +1,17 @@
+import { Router } from 'next/router'
 import React from 'react'
 
-const Cards = () => {
+const Cards = ({movie}) => {
   return (
-    <div className='h-64 w-40 '>
+    <div className='h-64 w-40 ' >
         <div className='flex flex-col p-2'>
             <div>
-                <img src='poster.jpeg' className='w-full h-3/4 ' />
+                <img src={movie.img_link} className='w-full h-3/4 ' />
             </div>
             <div className='flex justify-center items-center'>
-                <h2>Soorarai Pottru</h2>
+                <h2>{movie.Movie_title}</h2>
             </div>
         </div>
-
     </div>
   )
 }
