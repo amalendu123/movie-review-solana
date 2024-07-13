@@ -3,7 +3,7 @@ use std::string;
 use futures::StreamExt;
 use mongodb::{
     bson::{doc, extjson::de::Error, oid::ObjectId},
-    results::{InsertOneResult, UpdateResult},
+    results::{DeleteResult, InsertOneResult, UpdateResult},
     Client, Collection,
 };
 use crate::Movie;
@@ -74,5 +74,17 @@ impl MongoRepo {
                             .expect("Error updating User");
      Ok(updated_doc)
         
+    }
+
+    pub async fn delete_movie(&self,id:&String) -> Result<DeleteResult,Error>{
+        let obj_id = ObjectId::parse_str(id).unwrap();
+        let filter = doc! {"_id":obj_id};
+        let movie_detail = self  
+                            .col
+                            .delete_one(filter,None)
+                            .await
+                            .ok()
+                            .expect("Error deleting Movie");
+        Ok(movie_detail)
     }
 }

@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{path::Path, result};
 
 use actix_web::{cookie::time::convert::Microsecond, delete, get, post, put, web::{Data, Json,Path as pa}, App, Error, HttpResponse, HttpServer, Responder};
 mod db;
@@ -58,9 +58,27 @@ async fn update_movie(db: Data<MongoRepo>, path: pa<String>, new_movie: Json<Mov
     }
 }
 
-#[delete("/delete_movie/{uuid}")]
-async fn delete_movie() ->impl Responder{
-    HttpResponse::Ok().body("Delete movies")
+#[delete("/delete_movie/{id}")]
+async fn delete_movie(db:Data<MongoRepo>,path:pa<String>) -> HttpResponse{
+    let id = path.into_inner();
+    if( id.is_empty()){
+        return HttpResponse::BadRequest().body("invalid ID");
+    }
+    let result = db.delete_movie(&id).await;
+
+    match  result {
+        Ok(res)=>{
+            if res.deleted_count == 1{
+                return HttpResponse::Ok().json("Movie successfully deleted!"); 
+            }else {
+                return HttpResponse::NotFound().json("Movie with specified ID not found!");
+            }
+
+        }
+        Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+
+        
+    }
 }
 
 #[actix_web::main]
@@ -73,6 +91,7 @@ async  fn main() -> std::io::Result<()>{
             .service(getmovies)
             .service(add_movies)
             .service(update_movie)
+            .service(delete_movie)
     })
     .bind("127.0.0.1:8080")?
     .run()
