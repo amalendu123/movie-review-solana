@@ -1,8 +1,11 @@
-use actix_web::{cookie::time::convert::Microsecond, delete, get, patch, post, web::{Data, Json}, App, Error, HttpResponse, HttpServer, Responder};
+use std::path::Path;
+
+use actix_web::{cookie::time::convert::Microsecond, delete, get, post, put, web::{Data, Json,Path as pa}, App, Error, HttpResponse, HttpServer, Responder};
 mod db;
 use db::MongoRepo;
 mod models;
 use models::movie::Movie;
+use mongodb::bson::oid::ObjectId;
 #[get("/getallmovies")]
 async fn getmovies(db: Data<MongoRepo>) -> HttpResponse {
     match db.get_all_movies().await {
@@ -28,9 +31,31 @@ async fn add_movies(db:Data<MongoRepo>,newMovie:Json<Movie>) -> HttpResponse{
     }
 }
 
-#[patch("/update_movie/{uuid}")]
-async fn update_movie() -> impl Responder{
-    HttpResponse::Ok().body("update movies")
+#[put("/update_movie/{id}")]
+async fn update_movie(db: Data<MongoRepo>, path: pa<String>, new_movie: Json<Movie>) -> HttpResponse {
+    let id = path.into_inner();
+    if id.is_empty() {
+        return HttpResponse::BadRequest().body("Invalid ID");
+    }
+
+    let object_id = match ObjectId::parse_str(&id) {
+        Ok(oid) => oid,
+        Err(_) => return HttpResponse::BadRequest().body("Invalid ObjectId format"),
+    };
+
+    let data = Movie {
+        id: Some(object_id),
+        Movie_title: new_movie.Movie_title.clone(),
+        Description: new_movie.Description.clone(),
+        imdb: new_movie.imdb.clone(),
+        img_link: new_movie.img_link.clone(),
+    };
+
+    let update_result = db.update_Movie(&id, data).await;
+    match update_result {
+        Ok(movie) => HttpResponse::Ok().json(movie),
+        Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+    }
 }
 
 #[delete("/delete_movie/{uuid}")]

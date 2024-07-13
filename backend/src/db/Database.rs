@@ -1,7 +1,9 @@
+use std::string;
+
 use futures::StreamExt;
 use mongodb::{
-    bson::extjson::de::Error,
-    results::InsertOneResult,
+    bson::{doc, extjson::de::Error, oid::ObjectId},
+    results::{InsertOneResult, UpdateResult},
     Client, Collection,
 };
 use crate::Movie;
@@ -50,5 +52,27 @@ impl MongoRepo {
                         .expect("Error creating User");
         Ok(movie)
     }
-
+    
+    pub async fn update_Movie(&self,id:&String,new_movie:Movie) -> Result<UpdateResult, Error> {
+        let ObjId = ObjectId::parse_str(id).unwrap();
+        print!("{}",ObjId);
+        let filter = doc! {"_id":ObjId};
+        let new_doc = doc! {
+            "$set": {
+                "id": new_movie.id,
+                "Movie_title": new_movie.Movie_title,
+                "Description": new_movie.Description,
+                "imdb": new_movie.imdb,
+                "img_link": new_movie.img_link,
+            }
+        };
+        let updated_doc = self     
+                            .col    
+                            .update_one(filter, new_doc, None)
+                            .await
+                            .ok()
+                            .expect("Error updating User");
+     Ok(updated_doc)
+        
+    }
 }
