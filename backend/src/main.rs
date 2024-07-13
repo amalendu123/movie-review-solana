@@ -1,4 +1,4 @@
-use actix_web::{delete, get, patch, post, web::Data, App, Error, HttpResponse, HttpServer, Responder};
+use actix_web::{cookie::time::convert::Microsecond, delete, get, patch, post, web::{Data, Json}, App, Error, HttpResponse, HttpServer, Responder};
 mod db;
 use db::MongoRepo;
 mod models;
@@ -12,8 +12,20 @@ async fn getmovies(db: Data<MongoRepo>) -> HttpResponse {
 }
 
 #[post("/add_movies")]
-async fn add_movies() -> impl Responder{
-    HttpResponse::Ok().body("create movies")
+async fn add_movies(db:Data<MongoRepo>,newMovie:Json<Movie>) -> HttpResponse{
+    let data = Movie{
+        id:None,
+        Movie_title:newMovie.Movie_title.clone(),
+        Description:newMovie.Description.clone(),
+        imdb:newMovie.imdb.clone(),
+        img_link:newMovie.img_link.clone()
+    };
+
+    let movie_detail = db.create_user(data).await;
+    match movie_detail{
+        Ok(movie) => HttpResponse::Ok().json(movie),
+        Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+    }
 }
 
 #[patch("/update_movie/{uuid}")]

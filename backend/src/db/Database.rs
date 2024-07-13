@@ -34,4 +34,21 @@ impl MongoRepo {
         Ok(movies)
     }
 
+    pub async  fn create_user(&self,new_movie: Movie) -> Result<InsertOneResult, Error>{
+        let new_film = Movie{
+            id:None,
+            Movie_title:new_movie.Movie_title,
+            Description:new_movie.Description,
+            imdb:new_movie.imdb,
+            img_link:new_movie.img_link,
+        };
+        let movie = self    
+                        .col
+                        .insert_one(new_film, None)
+                        .await
+                        .ok()
+                        .expect("Error creating User");
+        Ok(movie)
+    }
+
 }
