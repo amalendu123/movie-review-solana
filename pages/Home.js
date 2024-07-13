@@ -1,8 +1,9 @@
+import { useWallet } from "@solana/wallet-adapter-react"
 import {React,useState} from 'react'
 
 const HomeScreen = () => {
   const [user,setuser] = useState(false) ;
-   
+  const wallet = useWallet()
   const handleclick = () =>[
     setuser(!user)
   ]
@@ -13,7 +14,7 @@ const HomeScreen = () => {
         </h2>
         <button
             className={`w-fit p-2 rounded-3xl bg-red-500 transition ease-in-out delay-150 ${
-              user ? 'opacity-100' : 'opacity-0'
+              wallet.connected ? 'opacity-100' : 'opacity-0'
             }`}
           >
             Initialize Account
