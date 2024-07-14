@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "560641955294",
+    "project_id": "movie-57cb8",
+    "storage_bucket": "movie-57cb8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:560641955294:android:86fb7788e43efd9847394f",
+        "android_client_info": {
+          "package_name": "com.example.adminapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZej2f9FSNxkTm5E8mExyw_oqdDew8LTE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

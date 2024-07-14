@@ -86,11 +86,7 @@ async  fn main() -> std::io::Result<()>{
     let d = MongoRepo::init().await;
     let db_data = Data::new(d);
     HttpServer::new(move ||{
-        let cors = Cors::default()
-            .allowed_origin("http://localhost:3000")
-            .allowed_origin("http://localhost:3200")
-            .allowed_origin("https://your-origin.com")
-            .allowed_origin("https://your-origin2.com")
+        let cors = Cors::permissive()
             .allowed_methods(vec!["GET", "POST", "DELETE", "PUT"])
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT,http::header::CONTENT_TYPE])
             .max_age(3600);

@@ -7,6 +7,6 @@ pub struct Movie {
         pub id: Option<ObjectId>,
         pub Movie_title: String,
         pub Description: String,
-        pub imdb: i64,
+        pub imdb: String,
         pub img_link:String
 }
