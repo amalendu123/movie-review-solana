@@ -1,11 +1,14 @@
-use std::{path::Path, result};
 use actix_cors::Cors;
-use actix_web::{cookie::time::convert::Microsecond, delete, get, http, post, put, web::{Data, Json,Path as pa}, App, Error, HttpResponse, HttpServer, Responder};
+use actix_web::{web::{Data, Json, Path as pa}, App, Error, HttpResponse, HttpServer, Responder, http, get, post, put, delete};
+use mongodb::bson::oid::ObjectId;
+use shuttle_actix_web::ShuttleActixWeb;
+use shuttle_runtime::ServiceConfig;
+
 mod db;
 use db::MongoRepo;
 mod models;
 use models::movie::Movie;
-use mongodb::bson::oid::ObjectId;
+
 #[get("/getallmovies")]
 async fn getmovies(db: Data<MongoRepo>) -> HttpResponse {
     match db.get_all_movies().await {
@@ -15,17 +18,17 @@ async fn getmovies(db: Data<MongoRepo>) -> HttpResponse {
 }
 
 #[post("/add_movies")]
-async fn add_movies(db:Data<MongoRepo>,newMovie:Json<Movie>) -> HttpResponse{
-    let data = Movie{
-        id:None,
-        Movie_title:newMovie.Movie_title.clone(),
-        Description:newMovie.Description.clone(),
-        imdb:newMovie.imdb.clone(),
-        img_link:newMovie.img_link.clone()
+async fn add_movies(db: Data<MongoRepo>, new_movie: Json<Movie>) -> HttpResponse {
+    let data = Movie {
+        id: None,
+        Movie_title: new_movie.Movie_title.clone(),
+        Description: new_movie.Description.clone(),
+        imdb: new_movie.imdb.clone(),
+        img_link: new_movie.img_link.clone(),
     };
 
     let movie_detail = db.create_user(data).await;
-    match movie_detail{
+    match movie_detail {
         Ok(movie) => HttpResponse::Ok().json(movie),
         Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
     }
@@ -59,48 +62,46 @@ async fn update_movie(db: Data<MongoRepo>, path: pa<String>, new_movie: Json<Mov
 }
 
 #[delete("/delete_movie/{id}")]
-async fn delete_movie(db:Data<MongoRepo>,path:pa<String>) -> HttpResponse{
+async fn delete_movie(db: Data<MongoRepo>, path: pa<String>) -> HttpResponse {
     let id = path.into_inner();
-    if( id.is_empty()){
-        return HttpResponse::BadRequest().body("invalid ID");
+    if id.is_empty() {
+        return HttpResponse::BadRequest().body("Invalid ID");
     }
     let result = db.delete_movie(&id).await;
 
-    match  result {
-        Ok(res)=>{
-            if res.deleted_count == 1{
-                return HttpResponse::Ok().json("Movie successfully deleted!"); 
-            }else {
+    match result {
+        Ok(res) => {
+            if res.deleted_count == 1 {
+                return HttpResponse::Ok().json("Movie successfully deleted!");
+            } else {
                 return HttpResponse::NotFound().json("Movie with specified ID not found!");
             }
-
         }
         Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
-
-        
     }
 }
 
-#[actix_web::main]
-async  fn main() -> std::io::Result<()>{
-    let d = MongoRepo::init().await;
-    let db_data = Data::new(d);
-    HttpServer::new(move ||{
+#[shuttle_runtime::main]
+async fn main() -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clone + 'static> {
+    let db = MongoRepo::init().await;
+    let db_data = Data::new(db);
+
+    let factory = move |cfg: &mut ServiceConfig| {
         let cors = Cors::permissive()
             .allowed_methods(vec!["GET", "POST", "DELETE", "PUT"])
-            .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT,http::header::CONTENT_TYPE])
+            .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT, http::header::CONTENT_TYPE])
             .max_age(3600);
-        
-        App::new()
+
+        let app = App::new()
             .wrap(cors)
             .app_data(db_data.clone())
             .service(getmovies)
             .service(add_movies)
             .service(update_movie)
-            .service(delete_movie)
-    })
-    .bind("127.0.0.1:8080")?
-    .run()
-    .await
+            .service(delete_movie);
 
+        cfg.service(app);
+    };
+
+    Ok(factory.into())
 }
