@@ -5,16 +5,15 @@ import {
   } from "@solana/wallet-adapter-react";
   import * as anchor from "@project-serum/anchor";
   import React, { useEffect, useState } from "react";
-  import idl from "../idl.json";
-  import { Button } from "@chakra-ui/react";
-  
+  import idl from "../../idl.json";
+
   const PROGRAM_ID = new anchor.web3.PublicKey(
-    `8zhJi5UjxpB9HTdjkqcUrdKKJPT5yRML7jJgyKj2RPZk`
+    `78keQQig26gsHzLf3Wny9K1a3HF7hFKexiZj3WYyqkNB`
   );
   
-  export const Initialize = ({ setCounter, setTransactionUrl }) => {
+  export const Initialize = ({ setTransactionUrl }) => {
     const [program, setProgram] = useState(null);
-  
+    const wallet1 = useWallet()
     const { connection } = useConnection();
     const wallet = useAnchorWallet();
   
@@ -33,22 +32,13 @@ import {
     }, [connection, wallet]);
   
     const onClick = async () => {
-      const newAccount = anchor.web3.Keypair.generate();
-  
-      const sig = await program.methods
-        .initialize()
-        .accounts({
-          counter: newAccount.publicKey,
-          user: wallet.publicKey,
-          systemAccount: anchor.web3.SystemProgram.programId,
-        })
-        .signers([newAccount])
-        .rpc();
   
       setTransactionUrl(`https://explorer.solana.com/tx/${sig}?cluster=devnet`);
-      setCounter(newAccount.publicKey);
+     
     };
   
-    return <Button onClick={onClick}>Initialize Counter</Button>;
+    return <button  className={`w-fit p-2 rounded-3xl bg-red-500 transition ease-in-out delay-150 ${
+      wallet1.connect ? 'opacity-100' : 'opacity-0'
+    }`} onClick={onClick}>Initialize</button>;
   };
   
