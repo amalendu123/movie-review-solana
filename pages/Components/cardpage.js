@@ -23,8 +23,8 @@ const Cardpage = () => {
     <div>
       {movies.map((film) => (
         
-        <Link  href={`/movie/${film._id.$oid}`}>
-        <Cards key={film.id} movie={film} />
+        <Link key={film.id}  href={`/movie/${film._id.$oid}`}>
+          <Cards movie={film}  />
         </Link>
       ))}
     </div>
