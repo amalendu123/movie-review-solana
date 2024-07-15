@@ -15,9 +15,11 @@ const Movie = () => {
   const wallet = useAnchorWallet();
   const { connection } = useConnection();
   const router = useRouter();
+  const [review,setreview] = useState([])
   const { movie } = router.query;
 
   useEffect(() => {
+    
     const getMovie = async () => {
       if (!movie) return;
 
@@ -30,8 +32,34 @@ const Movie = () => {
         setError('Failed to load movie data');
       }
     };
-
+    const getreview = async () => {
+      if (!wallet) {
+        setError('Please connect your wallet');
+        return;
+      }
+    
+      try {
+        const provider = new anchor.AnchorProvider(connection, wallet, {});
+        const program = new anchor.Program(idl, PROGRAM_ID, provider);
+        const movieReviews = await program.account.movieStruct.all();
+        
+        const matchingReviews = movieReviews.filter((review) => 
+          review.account.movieName === film.Movie_title
+        );
+    
+        if (matchingReviews.length > 0) {
+          setreview(matchingReviews[0].account);
+        } else {
+          setreview(null);
+        }
+    
+        console.log(matchingReviews);
+      } catch (error) {
+        console.error('Error fetching movie reviews:', error);
+      }
+    };
     getMovie();
+    getreview();
   }, [movie]);
 
   const postReview = async () => {
@@ -47,24 +75,24 @@ const Movie = () => {
       setError('Please enter a review');
       return;
     }
-  
+
     try {
       const provider = new anchor.AnchorProvider(connection, wallet, {});
       const program = new anchor.Program(idl, PROGRAM_ID, provider);
       const review = anchor.web3.Keypair.generate();
-  
+
       await program.methods.instructionOne(
         film.Movie_title,
         reviewText
       )
-      .accounts({
-        accountName: review.publicKey,
-        user: provider.wallet.publicKey,
-        systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .signers([review])
-      .rpc();
-  
+        .accounts({
+          accountName: review.publicKey,
+          user: provider.wallet.publicKey,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .signers([review])
+        .rpc();
+
       console.log('Review posted successfully!');
       setReviewText('');
       setError('');
@@ -79,7 +107,7 @@ const Movie = () => {
   return (
     <div className='w-screen h-screen flex'>
       <div className='w-1/2 flex flex-col justify-center items-start p-4'>
-        <Image src={`/${film.img_link}`} className='h-96 w-96' width={384} height={384} alt='poster'/>
+        <Image src={`/${film.img_link}`} className='h-96 w-96' width={384} height={384} alt='poster' />
         <div>
           <h1 className='text-4xl'>{film.Movie_title}</h1>
           <h2 className='text-2xl'>{film.Description}</h2>
