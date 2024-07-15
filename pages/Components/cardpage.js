@@ -24,7 +24,7 @@ const Cardpage = () => {
       {movies.map((film) => (
         
         <Link  href={`/movie/${film._id.$oid}`}>
-        <Cards key={film.id} movie={film} />
+          <Cards key={film.id} movie={film}  />
         </Link>
       ))}
     </div>
