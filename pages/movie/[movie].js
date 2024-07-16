@@ -120,24 +120,24 @@ const Movie = () => {
   if (!film) return <div>Loading...</div>;
 
   return (
-    <div className='w-screen h-screen flex'>
-      <div className='w-1/2 flex flex-col justify-center items-start p-4'>
-        <Image src={`/${film.img_link}`} className='h-96 w-96' width={384} height={384} alt='poster' />
+    <div className='w-screen h-screen md:flex bg-slate-400'>
+      <div className='md:w-1/2 flex flex-col justify-center md:items-start items-center p-4  '>
+        <Image src={`/${film.img_link}`} className='h-96 w-80' width={384} height={384} alt='poster' />
         <div>
           <h1 className='text-4xl'>{film.Movie_title}</h1>
           <h2 className='text-2xl'>{film.Description}</h2>
           <h3>IMDb: {film.imdb}</h3>
         </div>
       </div>
-      <div className='w-1/2 flex justify-center items-center'>
-        <div className='flex flex-col justify-between'>
+      <div className='md:w-1/2 flex justify-center items-center sm:w-full p-2 bg-slate-400 '>
+        <div className='flex flex-col justify-between border-solid border-2 border-black p-2  2xl:w-[800px] xl:w-[600px] lg:w-[530px] md:w-[400px] w-full '>
           <h1 className='text-4xl'>Review</h1>
           <div className='flex flex-col'>
             {review.map((r, index) => (
               <div key={index} className='flex flex-col '>
                 <div className='flex items-center gap-5 text-xl'>
                   <Person />
-                  <span>{r.account.reviewer.toBase58()}</span>
+                  <span ><p className='break-words lg:w-[450px] md:w-[300px]'>{r.account.reviewer.toBase58()}</p></span>
                 </div>
                 <div className='ml-10'>
                   <h2 className='font-light'>{r.account.review}</h2>
@@ -151,9 +151,9 @@ const Movie = () => {
               placeholder='Enter your review'
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
-              className='p-2 border rounded'
+              className='p-2 border rounded w-full'
             />
-            <button className='p-2 bg-red-500 text-white rounded' onClick={postReview}>
+            <button className='p-2 bg-red-500 text-white rounded w-full' onClick={postReview}>
               Post Review
             </button>
             {error && <p className='text-red-500'>{error}</p>}
