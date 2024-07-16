@@ -4,7 +4,8 @@ import axios from 'axios';
 import Image from 'next/image';
 import { useAnchorWallet, useConnection } from '@solana/wallet-adapter-react';
 import * as anchor from '@project-serum/anchor';
-import idl from "../../idl.json";
+import idl from '../../idl.json';
+import { People, Person } from '@mui/icons-material';
 
 const PROGRAM_ID = new anchor.web3.PublicKey('78keQQig26gsHzLf3Wny9K1a3HF7hFKexiZj3WYyqkNB');
 
@@ -15,11 +16,10 @@ const Movie = () => {
   const wallet = useAnchorWallet();
   const { connection } = useConnection();
   const router = useRouter();
-  const [review,setreview] = useState([])
+  const [review, setReview] = useState([]);
   const { movie } = router.query;
 
   useEffect(() => {
-    
     const getMovie = async () => {
       if (!movie) return;
 
@@ -32,35 +32,46 @@ const Movie = () => {
         setError('Failed to load movie data');
       }
     };
-    const getreview = async () => {
+
+    getMovie();
+  }, [movie]);
+
+  useEffect(() => {
+    const getReview = async () => {
       if (!wallet) {
         setError('Please connect your wallet');
         return;
       }
-    
+      if (!film) {
+        setError('Movie data not loaded');
+        return;
+      }
+
       try {
         const provider = new anchor.AnchorProvider(connection, wallet, {});
         const program = new anchor.Program(idl, PROGRAM_ID, provider);
         const movieReviews = await program.account.movieStruct.all();
-        
-        const matchingReviews = movieReviews.filter((review) => 
-          review.account.movieName === film.Movie_title
+
+        const matchingReviews = movieReviews.filter(
+          (review) => review.account.movieName === film.Movie_title
         );
-    
+
         if (matchingReviews.length > 0) {
-          setreview(matchingReviews[0].account);
+          setReview(matchingReviews);
         } else {
-          setreview(null);
+          setReview([]);
         }
-    
+
         console.log(matchingReviews);
       } catch (error) {
         console.error('Error fetching movie reviews:', error);
       }
     };
-    getMovie();
-    getreview();
-  }, [movie]);
+
+    if (film) {
+      getReview();
+    }
+  }, [film, wallet, connection]);
 
   const postReview = async () => {
     if (!wallet) {
@@ -81,10 +92,8 @@ const Movie = () => {
       const program = new anchor.Program(idl, PROGRAM_ID, provider);
       const review = anchor.web3.Keypair.generate();
 
-      await program.methods.instructionOne(
-        film.Movie_title,
-        reviewText
-      )
+      await program.methods
+        .instructionOne(film.Movie_title, reviewText)
         .accounts({
           accountName: review.publicKey,
           user: provider.wallet.publicKey,
@@ -96,6 +105,12 @@ const Movie = () => {
       console.log('Review posted successfully!');
       setReviewText('');
       setError('');
+      // Refresh reviews after posting
+      const movieReviews = await program.account.movieStruct.all();
+      const matchingReviews = movieReviews.filter(
+        (review) => review.account.movieName === film.Movie_title
+      );
+      setReview(matchingReviews);
     } catch (error) {
       console.error('Error posting review:', error);
       setError('Failed to post review');
@@ -116,7 +131,21 @@ const Movie = () => {
       </div>
       <div className='w-1/2 flex justify-center items-center'>
         <div className='flex flex-col justify-between'>
-          <h1>Review</h1>
+          <h1 className='text-4xl'>Review</h1>
+          <div className='flex flex-col'>
+            {review.map((r, index) => (
+              <div key={index} className='flex flex-col '>
+                <div className='flex items-center gap-5 text-xl'>
+                  <Person />
+                  <span>{r.account.reviewer.toBase58()}</span>
+                </div>
+                <div className='ml-10'>
+                  <h2 className='font-light'>{r.account.review}</h2>
+                </div>
+              </div>
+            ))}
+          </div>
+
           <div className='flex flex-col gap-2'>
             <textarea
               placeholder='Enter your review'
