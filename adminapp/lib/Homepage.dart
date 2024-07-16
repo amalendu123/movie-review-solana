@@ -68,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     try {
       var client = http.Client();
-      var url = Uri.parse('http://localhost:8080/add_movies');
+      var url = Uri.parse('https://backend2.shuttleapp.rs/add_movies');
       var response = await client.post(
         url,
         headers: {
