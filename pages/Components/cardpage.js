@@ -20,7 +20,7 @@ const Cardpage = () => {
   }, []);
 
   return (
-    <div>
+    <div className='flex p-4'>
       {movies.map((film) => (
         
         <Link key={film.id}  href={`/movie/${film._id.$oid}`}>
