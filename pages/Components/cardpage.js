@@ -9,7 +9,7 @@ const Cardpage = () => {
   useEffect(() => {
     const retrieve = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/getallmovies');
+        const response = await axios.get('https://backend2.shuttleapp.rs/getallmovies');
         setMovies(response.data);
         console.log(response.data)
       } catch (error) {

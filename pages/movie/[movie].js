@@ -24,7 +24,7 @@ const Movie = () => {
       if (!movie) return;
 
       try {
-        const response = await axios.get('http://localhost:8080/getallmovies');
+        const response = await axios.get('https://backend2.shuttleapp.rs/getallmovies');
         const movieData = response.data.find((mov) => mov._id.$oid === movie);
         setFilm(movieData);
       } catch (error) {
