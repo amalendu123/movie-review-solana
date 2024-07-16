@@ -20,7 +20,7 @@ const Cardpage = () => {
   }, []);
 
   return (
-    <div className='flex p-4'>
+    <div className='flex p-4 flex-wrap gap-10 justify-center w-full items-center'>
       {movies.map((film) => (
         
         <Link key={film.id}  href={`/movie/${film._id.$oid}`}>

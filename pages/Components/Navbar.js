@@ -12,7 +12,7 @@ const Navbar = () => {
   
   
   return (
-    <div className="flex justify-end items-center p-4">
+    <div className="flex justify-end items-center p-4 bg-yellow-500">
       {isClient ? <WalletMultiButton ></WalletMultiButton> : <></>}
     </div>
   );

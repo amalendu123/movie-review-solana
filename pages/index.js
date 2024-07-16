@@ -9,9 +9,9 @@ const inter = Inter({ subsets: ["latin"] });
 export default function Home() {
   
   return (
-    <>
+    <div className="bg-slate-400 h-fit">
       <HomeScreen />
-      <Cardpage />
-    </>
+      <div className="p-10"><Cardpage /></div>
+    </div>
   );
 }
